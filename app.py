@@ -182,6 +182,28 @@ with st.sidebar:
     st.divider()
     run_analysis = st.button("🔍 Run Analysis", use_container_width=True, type="primary")
 
+    # ── Download HTML Report
+    st.divider()
+    if st.button("📥 Generate HTML Report", use_container_width=True):
+        import subprocess, pathlib
+        with st.spinner(f"Building report for {symbol}…"):
+            result_proc = subprocess.run(
+                ["python3", "export_html.py", symbol],
+                capture_output=True, text=True,
+                cwd=str(pathlib.Path(__file__).parent),
+            )
+        html_path = pathlib.Path(__file__).parent / f"{symbol}_dashboard.html"
+        if html_path.exists():
+            st.sidebar.download_button(
+                label=f"⬇️ Download {symbol}_dashboard.html",
+                data=html_path.read_bytes(),
+                file_name=f"{symbol}_dashboard.html",
+                mime="text/html",
+                use_container_width=True,
+            )
+        else:
+            st.sidebar.error(f"Failed: {result_proc.stderr[:200]}")
+
     st.divider()
     st.caption("Data sourced via OpenBB / yfinance. For informational purposes only.")
 
